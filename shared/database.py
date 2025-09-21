@@ -47,14 +47,17 @@ class CategoriesDatabase:
     def create_category(self, category_data: Dict) -> bool:
         """Crear nueva categoría"""
         try:
+            from datetime import datetime
+            
+            current_time = datetime.now().isoformat()
             row_to_insert = {
                 "category_id": category_data["category_id"],
                 "category_name": category_data["category_name"],
                 "category_icon": category_data.get("category_icon", "📊"),
                 "display_order": category_data.get("display_order", 999),
                 "is_active": True,
-                "created_date": "CURRENT_TIMESTAMP()",
-                "updated_date": "CURRENT_TIMESTAMP()"
+                "created_date": current_time,
+                "updated_date": current_time
             }
             
             errors = self.client.insert_rows_json(self.table_ref, [row_to_insert])
@@ -148,6 +151,9 @@ class WorksDatabase:
     def create_work(self, work_data: Dict) -> bool:
         """Crear nuevo trabajo"""
         try:
+            from datetime import datetime
+            
+            current_time = datetime.now().isoformat()
             row_to_insert = {
                 "work_id": work_data["work_id"],
                 "work_name": work_data["work_name"],
@@ -160,8 +166,8 @@ class WorksDatabase:
                 "description": work_data.get("description", ""),
                 "short_description": work_data.get("short_description", ""),
                 "image_preview_url": work_data.get("image_preview_url", ""),
-                "created_date": work_data.get("created_date", "CURRENT_TIMESTAMP()"),
-                "updated_date": "CURRENT_TIMESTAMP()",
+                "created_date": current_time,
+                "updated_date": current_time,
                 "activated_date": work_data.get("activated_date"),
                 "archived_date": work_data.get("archived_date"),
                 "streamlit_page": work_data["streamlit_page"],
