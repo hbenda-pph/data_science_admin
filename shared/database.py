@@ -54,6 +54,7 @@ class CategoriesDatabase:
                 "category_id": category_data["category_id"],
                 "category_name": category_data["category_name"],
                 "category_icon": category_data.get("category_icon", "📊"),
+                "description": category_data.get("description", ""),
                 "display_order": category_data.get("display_order", 999),
                 "is_active": True,
                 "created_date": current_time,
