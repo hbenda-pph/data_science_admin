@@ -294,7 +294,7 @@ def show_add_work_form():
             
             with col2:
                 status = st.selectbox("Estado *", list(WORK_STATUS.values()))
-                streamlit_page = st.text_input("Archivo Streamlit *", placeholder="categories/calls_analysis/individual_companies.py")
+                work_url = st.text_input("URL del Trabajo *", placeholder="https://calls-analysis-dashboard.run.app")
                 image_file = st.file_uploader("Imagen preview", type=['jpg', 'jpeg', 'png', 'gif'])
             
             description = st.text_area("Descripción")
@@ -304,7 +304,7 @@ def show_add_work_form():
             submitted = st.form_submit_button("Agregar Trabajo")
             
             if submitted:
-                if not work_name or not version or not streamlit_page:
+                if not work_name or not version or not work_url:
                     st.error("Por favor complete todos los campos obligatorios (*)")
                 else:
                     try:
@@ -327,7 +327,7 @@ def show_add_work_form():
                             "is_latest": True,
                             "description": description,
                             "short_description": short_description,
-                            "streamlit_page": streamlit_page,
+                            "work_url": work_url,
                             "notes": notes,
                             "tags": []
                         }

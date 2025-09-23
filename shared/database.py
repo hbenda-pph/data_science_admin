@@ -69,23 +69,36 @@ class CategoriesDatabase:
             return False
     
     def update_category(self, category_id: str, update_data: Dict) -> bool:
-        """Actualizar categoría existente"""
+        """Actualizar categoría existente usando MERGE"""
         try:
             set_clauses = []
             for key, value in update_data.items():
                 if key != "category_id":
                     if isinstance(value, str):
-                        set_clauses.append(f"{key} = '{value}'")
+                        set_clauses.append(f"{key} = source.{key}")
                     else:
-                        set_clauses.append(f"{key} = {value}")
+                        set_clauses.append(f"{key} = source.{key}")
             
             if not set_clauses:
                 return True
             
+            # Construir valores para el MERGE
+            values = []
+            for key, value in update_data.items():
+                if key != "category_id":
+                    if isinstance(value, str):
+                        values.append(f"'{value}' as {key}")
+                    else:
+                        values.append(f"{value} as {key}")
+            
             query = f"""
-            UPDATE `{self.table_ref}`
-            SET {', '.join(set_clauses)}, updated_date = CURRENT_TIMESTAMP()
-            WHERE category_id = '{category_id}'
+            MERGE `{self.table_ref}` AS target
+            USING (
+                SELECT '{category_id}' as category_id, {', '.join(values)}
+            ) AS source
+            ON target.category_id = source.category_id
+            WHEN MATCHED THEN
+                UPDATE SET {', '.join(set_clauses)}, updated_date = CURRENT_TIMESTAMP()
             """
             
             job = self.client.query(query)
@@ -97,12 +110,16 @@ class CategoriesDatabase:
             return False
     
     def archive_category(self, category_id: str) -> bool:
-        """Archivar categoría (soft delete)"""
+        """Archivar categoría (soft delete) usando MERGE"""
         try:
             query = f"""
-            UPDATE `{self.table_ref}`
-            SET is_active = false, updated_date = CURRENT_TIMESTAMP()
-            WHERE category_id = '{category_id}'
+            MERGE `{self.table_ref}` AS target
+            USING (
+                SELECT '{category_id}' as category_id
+            ) AS source
+            ON target.category_id = source.category_id
+            WHEN MATCHED THEN
+                UPDATE SET is_active = false, updated_date = CURRENT_TIMESTAMP()
             """
             
             job = self.client.query(query)
@@ -171,7 +188,7 @@ class WorksDatabase:
                 "updated_date": current_time,
                 "activated_date": work_data.get("activated_date"),
                 "archived_date": work_data.get("archived_date"),
-                "streamlit_page": work_data["streamlit_page"],
+                "work_url": work_data["work_url"],
                 "config_json": work_data.get("config_json", "{}"),
                 "notes": work_data.get("notes", ""),
                 "tags": work_data.get("tags", [])
